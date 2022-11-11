@@ -54,7 +54,7 @@ def getBeerEmbedding(args):
 
 @RegisterEmbedding('glove')
 def getGloveEmbedding(args):
-    embedding_path='D:/enc-gen/data/embeddings/glove.6B/glove.6B.300d.txt'
+    embedding_path='embedding_data/glove.6B.300d.txt'
     lines = []
     with open(embedding_path, encoding="utf8") as file:
         lines = file.readlines()

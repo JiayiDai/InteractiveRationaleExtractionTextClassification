@@ -191,7 +191,9 @@ def test_model_combine(test_data, model1, gen1, model2, gen2, args):
         gen=gen1,
         optimizer=None,
         step=None,
-        args=args)
+        args=args,
+        is_test=True,
+        which_r = "r1")
     #f1(r2)
     epoch_details1_other, _, losses1_other, preds1_other, golds1_other, rationales1_other, logits1_other = run_epoch(
         data_loader=test_loader,
@@ -209,7 +211,9 @@ def test_model_combine(test_data, model1, gen1, model2, gen2, args):
         gen=gen2,
         optimizer=None,
         step=None,
-        args=args)
+        args=args,
+        is_test=True,
+        which_r = "r2")
     #f2(r1)
     epoch_details2_other, _, losses2_other, preds2_other, golds2_other, rationales2_other, logits2_other = run_epoch(
         data_loader=test_loader,
@@ -246,7 +250,7 @@ def test_model_combine(test_data, model1, gen1, model2, gen2, args):
     print(log_statement2)
     #print(log_statement1_other)
     #print(log_statement2_other)
-
+    
     
     #combine
     count = 0
@@ -299,6 +303,10 @@ def test_model_combine(test_data, model1, gen1, model2, gen2, args):
         else:
             wrong_cases.append(i)
     
+    #r1_selected = two_changes + confidence_one
+    #r2_selected = one_changes + confidence_two
+    #selected_r_cost(r1_selected, r2_selected)
+    #assert len(r1_selected) + len(r2_selected) == len(disagreement)
     for key in avg_cls:
         avg_cls[key] = avg_cls[key]/len(golds1)
     #print("avg_cls:", avg_cls)
@@ -343,20 +351,20 @@ def test_model_combine(test_data, model1, gen1, model2, gen2, args):
     f.write("LR = " + str(args.init_lr) +"\n")
     f.write("r1,2 length: "+str(epoch_details1['k_selection_loss'])+", "+ str(epoch_details2['k_selection_loss']) +"\n")
     f.write("r1,2 contig: "+str(epoch_details1['k_continuity_loss'])+", "+ str(epoch_details2['k_continuity_loss']) +"\n")
-    f.write("one_changes")
-    f.write(str(one_changes)+"\n")
+    #f.write("one_changes")
+    #f.write(str(one_changes)+"\n")
     
-    f.write("two_changes")
-    f.write(str(two_changes)+"\n")
+    #f.write("two_changes")
+    #f.write(str(two_changes)+"\n")
     
-    f.write("confidence_one")
-    f.write(str(confidence_one)+"\n")
+    #f.write("confidence_one")
+    #f.write(str(confidence_one)+"\n")
     
-    f.write("confidence_two")
-    f.write(str(confidence_two)+"\n")
+    #f.write("confidence_two")
+    #f.write(str(confidence_two)+"\n")
     
-    f.write("wrong_cases")
-    f.write(str(wrong_cases)+"\n")
+    #f.write("wrong_cases")
+    #f.write(str(wrong_cases)+"\n")
     f.close()
 
     
@@ -475,8 +483,50 @@ def error_analysis(agreement, disagreement, one_changes, two_changes, conf1, con
     print("select_one:", select_one)
     print("select_two:", select_two)
 
+test_masks_r1 = []
+test_masks_r2 = []
 
-def run_epoch(data_loader, train_model, model, gen, optimizer, step, args):
+def avg_r_length(masks):
+    length = 0
+    for mask in masks:
+        length += sum(mask)
+    return(length/len(masks))
+
+def avg_r_contiguity(masks):
+    contiguity_loss = 0
+    for mask in masks:
+        for i in range(len(mask)-1):
+            if mask[i] != mask[i+1]:
+                contiguity_loss += 1
+    return(contiguity_loss/len(masks))
+            
+def selected_r_cost(r1_selected, r2_selected):
+    flag = 0
+    for element in r1_selected:
+        if element in r2_selected:
+            flag = 1
+    assert flag == 0
+    selected_r_masks = []
+    not_selected_r_masks = []
+    for indx in r1_selected:
+        selected_r_masks.append(test_masks_r1[indx])
+        not_selected_r_masks.append(test_masks_r2[indx])
+    for indx in r2_selected:
+        selected_r_masks.append(test_masks_r2[indx])
+        not_selected_r_masks.append(test_masks_r1[indx])
+    
+    #print("length_selected:", avg_r_length(selected_r_masks))
+    #print("contiguity_selected:", avg_r_contiguity(selected_r_masks))
+    #print("length_not_selected:", avg_r_length(not_selected_r_masks))
+    #print("contiguity_not_selected:", avg_r_contiguity(not_selected_r_masks))    
+    f = open('results.txt', 'a')
+    f.write("length_selected:"+str(avg_r_length(selected_r_masks))+"\n")
+    f.write("contiguity_selected:"+str(avg_r_contiguity(selected_r_masks))+"\n")
+    f.write("length_not_selected:"+str(avg_r_length(not_selected_r_masks))+"\n")
+    f.write("contiguity_not_selected:"+str(avg_r_contiguity(not_selected_r_masks))+"\n")    
+    f.close()
+    
+def run_epoch(data_loader, train_model, model, gen, optimizer, step, args, is_test=False, which_r=None):
     '''
     Train model for one pass of train data, and return loss, acccuracy
     '''
@@ -543,6 +593,17 @@ def run_epoch(data_loader, train_model, model, gen, optimizer, step, args):
         
         if args.get_rationales:
             selection_cost, continuity_cost = gen.loss(mask, x_indx)
+            if is_test:
+                if which_r == "r1":
+                    test_masks_r1.extend(mask)
+                elif which_r == "r2":
+                    test_masks_r2.extend(mask)
+                select_c = 0
+                for single_mask in mask:
+                    select_c += sum(single_mask)
+
+                #print("num masks:", len(mask))
+                #print("continuity_cost", continuity_cost)
             loss += args.selection_lambda * selection_cost
             loss += args.continuity_lambda * continuity_cost
 
