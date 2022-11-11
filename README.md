@@ -1,4 +1,4 @@
-# RationaleExtraction
+# InteractiveRationaleExtraction
 Imitating human interaction to improve the performance of selective rationale extraction models
 
 The base models' implementation is modifiled from https://github.com/yala/text_nn. Please follow the installation instructions from that repository.
