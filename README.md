@@ -1,6 +1,8 @@
 # InteractiveRationaleExtraction
 Imitating human interaction to improve the performance of selective rationale extraction models
 
+This repository covers the implementation for the papers to appear at TSRML@Neurips 2022 (https://tsrml2022.github.io) and ALTA 2022 (https://aclanthology.org/venues/alta/).
+
 The base models' implementation is modifiled from https://github.com/yala/text_nn. Please follow the installation instructions from that repository.
 
 Example run (with IMDB movie reviews):
