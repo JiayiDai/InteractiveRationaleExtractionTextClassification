@@ -3,7 +3,7 @@ Imitating human interaction to improve the performance of selective rationale ex
 
 This repository covers the implementation for the papers to appear at TSRML@NeurIPS 2022 (https://tsrml2022.github.io) and ALTA 2022 (https://aclanthology.org/venues/alta/) by Jiayi Dai, Mi-Young Kim, Randy Goebel.
 
-The base models' implementation is modifiled from https://github.com/yala/text_nn. Please follow the installation instructions from that repository.
+The base models' implementation is modified from https://github.com/yala/text_nn. Please follow the installation instructions from that repository.
 
 Example run (with IMDB movie reviews):
 
