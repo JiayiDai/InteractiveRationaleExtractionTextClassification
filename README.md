@@ -1,4 +1,4 @@
-# InteractiveRationaleExtraction
+# InteractiveRationaleExtractionForTextClassification
 Imitating human interaction to improve the performance of selective rationale extraction models
 
 This repository covers the implementation for the papers to appear at TSRML@NeurIPS 2022 (https://tsrml2022.github.io) and ALTA 2022 (https://aclanthology.org/venues/alta/).
